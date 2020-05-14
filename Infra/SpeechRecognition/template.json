@@ -1,0 +1,128 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "region": {
+            "defaultValue": "eastus",
+            "type": "String"    
+        },
+        "runtime": {
+            "type": "string",
+            "defaultValue": "dotnet",
+            "allowedValues": ["node", "dotnet", "java", "python"],
+            "metadata": {
+                "description": "The language worker runtime to load in the function app."
+            }
+        },
+        "storageAccountType": {
+            "type": "string",
+            "defaultValue": "Standard_LRS",
+            "allowedValues": ["Standard_LRS", "Standard_GRS", "Standard_RAGRS"],
+            "metadata": {
+                "description": "Storage Account type"
+            }
+        },
+        "location": {
+            "type": "string",
+            "defaultValue": "EAST US"
+        }
+    },
+    "variables": {
+        "speechFunctionAppName":"covid-speech",
+        "speechstorageAccount": "covidspeechstorage",
+        "applicationInsightsName": "[variables('speechFunctionAppName')]",
+        "hostingPlanName": "[variables('speechFunctionAppName')]"
+    },
+    "resources": [
+        {
+            "type": "microsoft.insights/components",
+            "apiVersion": "2015-05-01",
+            "name": "[variables('applicationInsightsName')]",
+            "location": "[parameters('region')]",
+            "kind": "web",
+            "properties": {
+                "ApplicationId": "[variables('applicationInsightsName')]",
+                "Application_Type": "web",
+                "Request_Source": "IbizaWebAppExtensionCreate"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2019-06-01",
+            "name": "[variables('speechstorageAccount')]",
+            "location": "[parameters('region')]",
+            "sku": {
+                "name": "[parameters('storageAccountType')]"
+            },
+            "kind": "StorageV2",
+            "properties": {
+                "supportsHttpsTrafficOnly": true
+            }
+        },
+        {
+            "type": "Microsoft.Web/serverfarms",
+            "apiVersion": "2018-02-01",
+            "name": "[variables('hostingPlanName')]",
+            "location": "[parameters('location')]",
+            "sku": {
+                "name": "Y1",
+                "tier": "Dynamic"
+            },
+            "kind": "functionapp",
+            "properties": {
+                "name": "[variables('hostingPlanName')]",
+                "computeMode": "Dynamic"
+            }
+        },        
+        {
+            "type": "Microsoft.Web/sites",
+            "apiVersion": "2018-11-01",
+            "name": "[variables('speechFunctionAppName')]",
+            "location": "EAST US",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('speechstorageAccount'))]",
+                "[resourceId('microsoft.insights/components', variables('applicationInsightsName'))]"
+            ],
+            "identity": {
+                "type": "SystemAssigned"
+            },
+            "kind": "functionapp",
+            "properties": {
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
+                "siteConfig": {
+                    "appSettings": [
+                        {
+                            "name": "AzureWebJobsStorage",
+                            "value": ""
+                        },
+                        {
+                            "name": "storageConnectionString",
+                            "value": ""
+                        },
+                        {
+                            "name": "speechApiRegion",
+                            "value": ""
+                        },
+                        {
+                            "name": "speechApiKey",
+                            "value": ""
+                        },
+                        {
+                            "name": "WEBSITE_CONTENTSHARE",
+                            "value": "[toLower(variables('speechFunctionAppName'))]"
+                        },
+                        {
+                            "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+                            "value": "[reference(resourceId('microsoft.insights/components/', variables('applicationInsightsName')), '2015-05-01').InstrumentationKey]"
+                        },
+                        {
+                            "name": "FUNCTIONS_WORKER_RUNTIME",
+                            "value": "[parameters('runtime')]"
+                        }
+                    ]
+                }
+            }
+        }
+    ]
+}

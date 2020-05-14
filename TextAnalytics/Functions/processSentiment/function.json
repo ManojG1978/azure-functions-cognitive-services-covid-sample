@@ -1,0 +1,29 @@
+{
+  "scriptFile": "__init__.py",
+  "bindings": [
+    {
+      "name": "inputblob",
+      "type": "blobTrigger",
+      "path": "sroutput",
+      "direction": "in",
+      "connection": "storageConnectionString"
+    },
+    {
+      "name": "outputblob",
+      "type": "blob",
+      "direction": "out",
+      "path": "psoutput/{rand-guid}.json",
+      "connection": "storageConnectionString"
+    },
+    {
+      "direction": "out",
+      "type": "cosmosDB",
+      "name": "doc",
+      "databaseName": "cognitivedb",
+      "collectionName": "processedsentiments",
+      "createLeaseCollectionIfNotExists": true,
+      "connectionStringSetting": "cosmosDBConnectionString",
+      "createIfNotExists": false
+    }  
+  ]
+}

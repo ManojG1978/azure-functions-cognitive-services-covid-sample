@@ -1,0 +1,28 @@
+{
+  "scriptFile": "__init__.py",
+  "bindings": [
+    {
+      "name": "inputblob",
+      "type": "blobTrigger",
+      "path": "sroutput",
+      "direction": "in",
+      "connection": "storageConnectionString"
+    },
+    {
+      "name": "outputblob",
+      "type": "blob",
+      "direction": "out",
+      "path": "eeoutput/{rand-guid}.json",
+      "connection": "storageConnectionString"
+    },
+    {
+      "direction": "out",
+      "type": "cosmosDB",
+      "name": "doc",
+      "databaseName": "cognitivedb",
+      "collectionName": "extractedentities",
+      "createLeaseCollectionIfNotExists": true,
+      "connectionStringSetting": "cosmosDBConnectionString"
+    } 
+  ]
+}

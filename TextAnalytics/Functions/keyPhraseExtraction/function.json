@@ -1,0 +1,29 @@
+{
+  "scriptFile": "__init__.py",
+  "bindings": [
+    {
+      "name": "inputblob",
+      "type": "blobTrigger",
+      "path": "sroutput",
+      "direction": "in",
+      "connection": "storageConnectionString"
+    },
+    {
+      "direction": "out",
+      "type": "cosmosDB",
+      "name": "doc",
+      "databaseName": "cognitivedb",
+      "collectionName": "keyphrases",
+      "createLeaseCollectionIfNotExists": true,
+      "connectionStringSetting": "cosmosDBConnectionString",
+      "createIfNotExists": false
+    },  
+    {
+      "name": "outputblob",
+      "type": "blob",
+      "direction": "out",
+      "path": "kpeoutput/{rand-guid}.json",
+      "connection": "storageConnectionString"
+    }
+  ]
+}

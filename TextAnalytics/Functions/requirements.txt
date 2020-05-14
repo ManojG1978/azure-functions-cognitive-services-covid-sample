@@ -1,0 +1,3 @@
+azure.core
+azure-functions
+azure-ai-textanalytics
